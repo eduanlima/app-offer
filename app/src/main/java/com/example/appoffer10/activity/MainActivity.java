@@ -7,10 +7,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -36,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView textViewResult;
     private Retrofit retrofit;
     private List<Store> stores;
+    private List<Store> storeSearch;
+    private EditText editTextSearch;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,7 +48,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         buttonSubmit = findViewById(R.id.buttonSubmit);
-        // textViewResult = findViewById(R.id.textViewResult);
+        editTextSearch = findViewById(R.id.editTextSearch);
 
         retrofit = new Retrofit.Builder().
                 baseUrl("https://app-offers-one.herokuapp.com/")
@@ -53,7 +58,26 @@ public class MainActivity extends AppCompatActivity {
          buttonSubmit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                searchStore();
+                searchStoreAPI();
+            }
+        });
+
+        editTextSearch.addTextChangedListener(new TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+                Toast.makeText(getApplicationContext(), "Before text change",  Toast.LENGTH_SHORT).show();
+
+            }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //Toast.makeText(getApplicationContext(), "On text changed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+               // Toast.makeText(getApplicationContext(), "After changed", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -66,7 +90,11 @@ public class MainActivity extends AppCompatActivity {
         this.stores = stores;
     }
 
-    private void searchStore(){
+    public List<Store> getStoreSearch(){ return storeSearch; }
+
+    public void setStoreSearch(List<Store> storeSearch){ this.storeSearch = storeSearch; }
+
+    private void searchStoreAPI(){
         StoreService storeService = retrofit.create(StoreService.class);
         Call<List<Store>> call = storeService.searchStore();
 
@@ -76,7 +104,7 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     stores = response.body();
                     setStores(stores);
-                    createRecycleView();
+                    createRecycleView(getStores());
                 }
             }
 
@@ -87,11 +115,15 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void createRecycleView(){
+    private void searchStore(String textedit){
+
+    }
+
+    private void createRecycleView(List<Store> stores){
         recyclerViewAllStores = findViewById(R.id.recyclerViewAllStores);
 
         //Configure adapter
-        AdapterStores adapterStores =  new AdapterStores(getStores(), this);
+        AdapterStores adapterStores =  new AdapterStores(stores, this);
 
         //Configure Recycleview
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -118,12 +150,6 @@ public class MainActivity extends AppCompatActivity {
 
                                 //Open next Activity
                                 startActivity(intent);
-                                /*
-                                Toast.makeText(getApplicationContext(),
-                                                "Item selected: " + store.getName_desc(),
-                                                Toast.LENGTH_SHORT
-                                ).show();
-                                */
 
                             }
 

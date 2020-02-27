@@ -1,7 +1,6 @@
 package com.example.appoffer10.adapter;
 
 import android.content.Context;
-import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -32,7 +31,7 @@ public class AdapterOffers extends RecyclerView.Adapter<AdapterOffers.MyViewHold
     public MyViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View itemList = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.offer_details, parent, false);
+                    .inflate(R.layout.adapter_offer_details, parent, false);
 
         return new MyViewHolder(itemList);
     }
