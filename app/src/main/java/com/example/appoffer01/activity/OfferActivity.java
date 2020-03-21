@@ -1,4 +1,4 @@
-package com.example.appoffer10.activity;
+package com.example.appoffer01.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -8,11 +8,11 @@ import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.example.appoffer01.adapter.AdapterOffers;
+import com.example.appoffer01.api.model.Offer;
+import com.example.appoffer01.api.model.Store;
+import com.example.appoffer01.util.PicassoTrustAll;
 import com.example.appoffer10.R;
-import com.example.appoffer10.adapter.AdapterOffers;
-import com.example.appoffer10.api.model.Offer;
-import com.example.appoffer10.api.model.Store;
-import com.example.appoffer10.util.PicassoTrustAll;
 
 import java.util.List;
 
@@ -40,10 +40,10 @@ public class OfferActivity extends AppCompatActivity {
         PicassoTrustAll.getInstance(this).load(store.getImage()).into(imageViewBrand);
 
         textViewStore = findViewById(R.id.textViewStore);
-        textViewStore.setText(store.getName_desc());
+        textViewStore.setText(store.getName());
 
         textViewAddress = findViewById(R.id.textViewAddress);
-        textViewAddress.setText(store.getAddress());
+        //textViewAddress.setText(store.getAddress());
 
         setOffers(store.getOffers());
 
@@ -54,8 +54,8 @@ public class OfferActivity extends AppCompatActivity {
         recyclerViewOffers.setLayoutManager(layoutManager);
 
         //Define adapter
-        AdapterOffers adapterOffers = new AdapterOffers(getOffers(), this);
-        recyclerViewOffers.setAdapter(adapterOffers);
+        //AdapterOffers adapterOffers = new AdapterOffers(getOffers(), this);
+        //recyclerViewOffers.setAdapter(adapterOffers);
 
 
     }

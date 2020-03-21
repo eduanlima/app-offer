@@ -1,4 +1,4 @@
-package com.example.appoffer10.adapter;
+package com.example.appoffer01.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -11,20 +11,23 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appoffer10.R;
-import com.example.appoffer10.api.model.Store;
-import com.example.appoffer10.util.PicassoTrustAll;
-import com.squareup.picasso.Picasso;
+import com.example.appoffer01.api.model.Store;
+import com.example.appoffer01.util.PicassoTrustAll;
 
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHolder>{
 
     private List<Store> stores;
+    private Map<Integer, String> mapAdresses = new TreeMap<>();
     private Context context;
 
-    public AdapterStores(List<Store> stores, Context context) {
+    public AdapterStores(List<Store> stores, Map<Integer, String> mapAdresses, Context context) {
 
         this.stores = stores;
+        this.mapAdresses = mapAdresses;
         this.context = context;
     }
 
@@ -40,8 +43,8 @@ public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHold
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Store store = stores.get(position);
-        holder.name.setText(store.getName_desc());
-        holder.address.setText(store.getAddress());
+        holder.name.setText(store.getName());
+        holder.address.setText(mapAdresses.get(store.getId()));
         PicassoTrustAll.getInstance(context).load(store.getImage()).into(holder.imageViewBrand);
     }
 

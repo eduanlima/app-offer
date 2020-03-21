@@ -1,14 +1,14 @@
-package com.example.appoffer10.model;
+package com.example.appoffer01.model;
 
 import java.io.Serializable;
 
-public class ProductSearch implements Serializable {
+public class OfferSearch implements Serializable, Comparable<OfferSearch> {
 
     private Integer id;
     private Double price;
     private Integer store;
 
-    public ProductSearch(Integer id, Double price, Integer store) {
+    public OfferSearch(Integer id, Double price, Integer store) {
         this.id = id;
         this.price = price;
         this.store = store;
@@ -54,7 +54,7 @@ public class ProductSearch implements Serializable {
             return false;
         if (getClass() != obj.getClass())
             return false;
-        ProductSearch other = (ProductSearch) obj;
+        OfferSearch other = (OfferSearch) obj;
         if (id == null) {
             if (other.id != null)
                 return false;
@@ -65,8 +65,12 @@ public class ProductSearch implements Serializable {
 
     @Override
     public String toString() {
-        return "ProductSearch [id=" + id + ", price=" + price + ", store=" + store + "]";
+        return "OfferSearch [id=" + id + ", price=" + price + ", store=" + store + "]";
     }
 
+    @Override
+    public int compareTo(OfferSearch o) {
+        return price.compareTo(o.price);
+    }
 }
 

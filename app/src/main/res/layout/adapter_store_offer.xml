@@ -21,8 +21,7 @@
                 android:id="@+id/imageViewOffer"
                 android:layout_width="11dp"
                 android:layout_height="91dp"
-                android:layout_weight="1"
-                app:srcCompat="@drawable/ic_launcher_background" />
+                android:layout_weight="1" />
 
             <TextView
                 android:id="@+id/textViewDescOffer"
@@ -32,7 +31,7 @@
                 android:layout_marginRight="4dp"
                 android:layout_weight="1"
                 android:text="TextView"
-                android:textSize="16" />
+                android:textSize="16dp" />
 
             <TextView
                 android:id="@+id/textViewPriceOffer"
@@ -49,7 +48,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_margin="8dp"
-        android:layout_marginTop="0"
+        android:layout_marginTop="0dp"
         android:orientation="vertical">
 
         <LinearLayout
@@ -82,8 +81,7 @@
                 android:id="@+id/imageViewStore"
                 android:layout_width="82dp"
                 android:layout_height="69dp"
-                android:layout_weight="0"
-                app:srcCompat="@drawable/ic_launcher_background" />
+                android:layout_weight="0" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>

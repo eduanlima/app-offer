@@ -1,4 +1,4 @@
-package com.example.appoffer10.adapter;
+package com.example.appoffer01.adapter;
 
 import android.content.Context;
 import android.view.LayoutInflater;
@@ -10,9 +10,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.appoffer01.api.model.Offer;
 import com.example.appoffer10.R;
-import com.example.appoffer10.api.model.Offer;
-import com.example.appoffer10.util.PicassoTrustAll;
+import com.example.appoffer01.util.PicassoTrustAll;
 
 import java.util.List;
 

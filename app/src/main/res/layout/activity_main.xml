@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    tools:context=".MainActivity">
+    tools:context="com.example.appoffer01.activity.MainActivity">
 
     <LinearLayout
         android:id="@+id/linearLayout"
@@ -33,17 +33,11 @@
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewAllStores"
             android:layout_width="match_parent"
-            android:layout_height="410dp"
+            android:layout_height="match_parent"
             android:layout_marginStart="8dp"
             android:layout_marginLeft="8dp"
             android:layout_marginEnd="8dp"
             android:layout_marginRight="8dp" />
-
-        <Button
-            android:id="@+id/buttonSubmit"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Test" />
 
     </LinearLayout>
 

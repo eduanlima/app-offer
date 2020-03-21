@@ -1,4 +1,4 @@
-package com.example.appoffer10.api.model;
+package com.example.appoffer01.api.model;
 
 import java.io.Serializable;
 

@@ -1,4 +1,4 @@
-package com.example.appoffer10.util;
+package com.example.appoffer01.util;
 
 import android.content.Context;
 import android.view.GestureDetector;

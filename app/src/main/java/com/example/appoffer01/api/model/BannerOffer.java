@@ -1,63 +1,44 @@
-package com.example.appoffer10.api.model;
+package com.example.appoffer01.api.model;
 
 import java.io.Serializable;
 import java.util.Date;
 
-public class Offer implements Serializable{
+public class BannerOffer implements Serializable{
 
 	private static final long serialVersionUID = 1L;
-	private Integer id;
 	private Store store;
-	private Product product;
-	private Double price;
+	private Sector sector;
 	private Date dateInitial;
 	private Date dateLimit;
-	private Boolean status;
 	private String image;
+	private Boolean status;
 	
-	public Offer() {}
+	public BannerOffer() {}
 	
-	public Offer(Integer id, Store store, Product product, Double price, Date dateInitial, Date dateLimit, Boolean status, String image) {
-		this.id = id;
+	public BannerOffer(Store store, Sector sector, Date dateInitial, Date dateLimit, String image, Boolean status) {
+		super();
 		this.store = store;
-		this.product = product;
-		this.price = price;
+		this.sector = sector;
 		this.dateInitial = dateInitial;
 		this.dateLimit = dateLimit;
-		this.status = status;
 		this.image = image;
+		this.status = status;
 	}
 
-	public Integer getId() {
-		return id;
-	}
-
-	public void setId(Integer id) {
-		this.id = id;
-	}
-	
 	public Store getStore() {
 		return store;
 	}
-	
+
 	public void setStore(Store store) {
 		this.store = store;
 	}
 
-	public Product getProduct() {
-		return product;
+	public Sector getSector() {
+		return sector;
 	}
 
-	public void setProduct(Product product) {
-		this.product = product;
-	}
-
-	public Double getPrice() {
-		return price;
-	}
-
-	public void setPrice(Double price) {
-		this.price = price;
+	public void setSector(Sector sector) {
+		this.sector = sector;
 	}
 
 	public Date getDateInitial() {
@@ -75,15 +56,7 @@ public class Offer implements Serializable{
 	public void setDateLimit(Date dateLimit) {
 		this.dateLimit = dateLimit;
 	}
-	
-	public Boolean getStatus() {
-		return status;
-	}
 
-	public void setStatus(Boolean status) {
-		this.status = status;
-	}
-	
 	public String getImage() {
 		return image;
 	}
@@ -92,11 +65,20 @@ public class Offer implements Serializable{
 		this.image = image;
 	}
 
+	public Boolean getStatus() {
+		return status;
+	}
+
+	public void setStatus(Boolean status) {
+		this.status = status;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
+		result = prime * result + ((sector == null) ? 0 : sector.hashCode());
+		result = prime * result + ((store == null) ? 0 : store.hashCode());
 		return result;
 	}
 
@@ -108,11 +90,16 @@ public class Offer implements Serializable{
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Offer other = (Offer) obj;
-		if (id == null) {
-			if (other.id != null)
+		BannerOffer other = (BannerOffer) obj;
+		if (sector == null) {
+			if (other.sector != null)
 				return false;
-		} else if (!id.equals(other.id))
+		} else if (!sector.equals(other.sector))
+			return false;
+		if (store == null) {
+			if (other.store != null)
+				return false;
+		} else if (!store.equals(other.store))
 			return false;
 		return true;
 	}
