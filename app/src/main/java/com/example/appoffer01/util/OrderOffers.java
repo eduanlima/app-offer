@@ -11,24 +11,12 @@ import java.util.List;
 
 public class OrderOffers {
 
-    public static List<Store> orderByPrice(String text, List<Store> stores){
+    public static List<Offer> orderByPrice(String text, List<Offer> allOffers){
 
-        List<Offer> listOfferNOrder = new ArrayList<Offer>();
-        List<Offer> listOfferOrder = new ArrayList<Offer>();
-
-        List<Store> listStoresOrder = new ArrayList<>();
-
-        //Getting offer each element into list of store
-        if (stores.size() > 0) {
-            for (Store store: stores) {
-
-                for (Offer offerNOrder : store.getOffers())
-                    listOfferNOrder.add(offerNOrder);
-            }
-        }
+        List<Offer> listOfferOrder = new ArrayList<>();
 
         //Searching for text description product into list offer without order (NOrder) and instance a list order according search
-        for (Offer offerSearch: listOfferNOrder) {
+        for (Offer offerSearch: allOffers) {
             System.out.println(text.toUpperCase());
             int aux = offerSearch.getProduct().getDescription().toUpperCase().indexOf(text.toUpperCase());
 
@@ -39,25 +27,11 @@ public class OrderOffers {
 
         if (listOfferOrder.size() > 0) {
             Collections.sort(listOfferOrder);
-
-            //Creating a new list of stores ordered
-            Store storeOrder;
-            List<Offer> listSearchOffer;
-
-            for (Offer offerOrder: listOfferOrder) {
-
-                storeOrder = new Store();
-                storeOrder.setId(offerOrder.getStore().getId());
-                storeOrder.setName(offerOrder.getStore().getName());
-
-                listSearchOffer = new ArrayList<>();
-                listSearchOffer.add(offerOrder);
-                storeOrder.setOffers(listSearchOffer);
-
-                listStoresOrder.add(storeOrder);
-            }
+        }
+        else{
+            listOfferOrder = null;
         }
 
-        return listStoresOrder;
+        return listOfferOrder;
     }
 }

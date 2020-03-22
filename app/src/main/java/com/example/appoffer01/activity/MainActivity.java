@@ -61,9 +61,11 @@ public class MainActivity extends AppCompatActivity {
     private Retrofit retrofit;
     private Store store;
     private List<Address> adresses;
+    private List<Integer> allIdStores = new ArrayList<>();
     private List<Store> stores = new ArrayList<>();
-    private List<Offer> offers;
-    private List<Store> storesSearch = new ArrayList<>();
+    private List<Offer> allOffers  = new ArrayList<>();
+    private List<Offer> offerSearch = new ArrayList<>();
+    private Map<Integer, Store> mapStores = new TreeMap<>();
     private Map<Integer, List<Offer>> mapOffers =  new TreeMap<>();
     private Map<Integer, String> mapAdresses = new TreeMap<>();
     private EditText editTextSearch;
@@ -93,18 +95,18 @@ public class MainActivity extends AppCompatActivity {
             public void beforeTextChanged(CharSequence s, int start, int count, int after) {
                 if (editTextSearch.length() > 2) {
 
-                    setStoresSearch(OrderOffers.orderByPrice(editTextSearch.getText().toString(), stores));
+                    offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
 
-                    if (getStoresSearch() != null){
-                        createRecycleView(getStoresSearch(), 1);
+                    if (offerSearch != null){
+                        createRecycleView(1);
                     }
                     else{
                         Toast.makeText(getApplicationContext(), "Produto não encontrado",  Toast.LENGTH_SHORT).show();
-                        createRecycleView(stores, 0);
+                        createRecycleView(0);
                     }
                 }
                 else if (editTextSearch.length()  <= 2){
-                    createRecycleView(stores, 0);
+                    createRecycleView(0);
                 }
             }
 
@@ -248,15 +250,15 @@ public class MainActivity extends AppCompatActivity {
                 if (response.isSuccessful()){
                     store = response.body();
                     stores.add(store);
+                    mapStores.put(store.getId(), store);
 
                     if (stores.size() == totalAdresses){
-                        createRecycleView(getStores(), 0);
+                        createRecycleView(0);
 
-                        int index = 0;
-
-                        for (Store store: getStores()){
-                            searchOffersAPI(store.getId());
-                            index++;
+                        if (mapAdresses.size() != allIdStores.size()){
+                            for (Store store: getStores()){
+                                searchOffersAPI(store.getId());
+                            }
                         }
                     }
                 }
@@ -274,13 +276,26 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<List<Offer>>() {
             @Override
             public void onResponse(Call<List<Offer>> call, Response<List<Offer>> response) {
-                List<Offer> offers = new ArrayList<>();
-                if (response.isSuccessful()){
-                    offers = response.body();
-                    mapOffers.put(offers.get(0).getStore().getId(), response.body());
+                List<Offer> offers;
 
-                    if (mapAdresses.size() == mapOffers.size()){
-                        setOffersStores();
+                if (response.isSuccessful()) {
+                    offers = response.body();
+
+                    if (offers != null) {
+                        int aux = 0;
+                        for (Integer id_store : allIdStores) {
+                            if (id_store == offers.get(0).getStore().getId()) {
+                                aux++;
+                            }
+                        }
+
+                        if (aux == 0) {
+                            allIdStores.add(offers.get(0).getStore().getId());
+                        }
+
+                        for (Offer offer: offers){
+                            allOffers.add(offer);
+                        }
                     }
                 }
             }
@@ -290,12 +305,12 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private void createRecycleView(List<Store> stores, int type){
+    private void createRecycleView(int type){
         recyclerViewAllStores = findViewById(R.id.recyclerViewAllStores);
 
         //Configure adapter
         AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, this);
-        AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(storesSearch, mapAdresses,this);
+        AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapAdresses, this);
 
         //Configure Recycleview
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
@@ -362,14 +377,4 @@ public class MainActivity extends AppCompatActivity {
     public void setStores(List<Store> stores){
         this.stores = stores;
     }
-
-    public List<Offer> getOffers() { return offers; }
-
-    public void setOffers(List<Offer> offers){
-        System.out.println("Set offer"); this.offers = offers;
-    }
-
-    public List<Store> getStoresSearch(){ return storesSearch; }
-
-    public void setStoresSearch(List<Store> storesSearch){ this.storesSearch = storesSearch; }
 }

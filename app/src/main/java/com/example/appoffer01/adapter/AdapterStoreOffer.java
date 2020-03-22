@@ -19,12 +19,14 @@ import java.util.List;
 import java.util.Map;
 
 public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.MyViewHolder> {
-    private List<Store> stores;
+    private List<Offer> offers;
+    private Map<Integer, Store> mapStores;
     private Map<Integer, String> mapAdresses;
     private Context context;
 
-    public AdapterStoreOffer(List<Store> stores, Map<Integer, String> mapAdresses, Context context){
-        this.stores = stores;
+    public AdapterStoreOffer(List<Offer> offers, Map<Integer, Store> mapStores, Map<Integer, String> mapAdresses, Context context){
+        this.offers = offers;
+        this.mapStores = mapStores;
         this.mapAdresses = mapAdresses;
         this.context = context;
     }
@@ -41,10 +43,7 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
 
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
-        Store store = stores.get(position);
-        Offer offer;
-        List<Offer> offers = store.getOffers();
-        offer = offers.get(0);
+        Offer offer = offers.get(position);
 
         PicassoTrustAll.getInstance(context).load(offer.getImage()).into(holder.imageViewOffer);
         holder.textViewDescOffer.setText(offer.getProduct().getDescription());
@@ -53,15 +52,14 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
         stringBuilder.append("R$ ");
         holder.textViewPriceOffer.setText(stringBuilder.append(offer.getPrice()).toString().replace(".",","));
 
-        holder.textViewStore.setText(store.getName());
-        holder.textViewAddressStore.setText(mapAdresses.get(store.getId()));
-        PicassoTrustAll.getInstance(context).load(store.getImage()).into(holder.imageViewStore);
-
+        holder.textViewStore.setText(mapStores.get(offer.getStore().getId()).getName());
+        holder.textViewAddressStore.setText(mapAdresses.get(offer.getStore().getId()));
+        PicassoTrustAll.getInstance(context).load(mapStores.get(offer.getStore().getId()).getImage()).into(holder.imageViewStore);
     }
 
     @Override
     public int getItemCount() {
-        return stores.size();
+        return offers.size();
     }
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
