@@ -13,7 +13,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
-        <activity android:name="com.example.appoffer01.activity.OfferActivity" android:screenOrientation="portrait"></activity>
+        <activity android:name="com.example.appoffer01.activity.BannerOfferActivity" android:screenOrientation="portrait"></activity>
         <activity android:name="com.example.appoffer01.activity.MainActivity"
             android:screenOrientation="portrait">
             <intent-filter>

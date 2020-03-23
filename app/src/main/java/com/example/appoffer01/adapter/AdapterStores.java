@@ -21,7 +21,7 @@ import java.util.TreeMap;
 public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHolder>{
 
     private List<Store> stores;
-    private Map<Integer, String> mapAdresses = new TreeMap<>();
+    private Map<Integer, String> mapAdresses;
     private Context context;
 
     public AdapterStores(List<Store> stores, Map<Integer, String> mapAdresses, Context context) {
@@ -37,6 +37,8 @@ public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHold
 
         View itemList = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.adapter_stores, parent, false);
+        itemList.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+        itemList.requestLayout();
         return new MyViewHolder(itemList);
     }
 

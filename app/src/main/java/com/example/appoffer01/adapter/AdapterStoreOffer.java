@@ -37,7 +37,9 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
 
         View itemList = LayoutInflater.from(parent.getContext())
                 .inflate(R.layout.adapter_store_offer, parent, false);
-
+                itemList.getLayoutParams().height = ViewGroup.LayoutParams.WRAP_CONTENT;
+                itemList.requestLayout();
+               // itemList.setBackgroundColor(Color.parseColor("#bebebe"));
         return new MyViewHolder(itemList);
     }
 
@@ -75,7 +77,7 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imageViewOffer = itemView.findViewById(R.id.imageViewOffer);
+            imageViewOffer = itemView.findViewById(R.id.imageViewBannerOffer);
             textViewDescOffer = itemView.findViewById(R.id.textViewDescOffer);
             textViewPriceOffer = itemView.findViewById(R.id.textViewPriceOffer);
 

@@ -3,7 +3,6 @@ package com.example.appoffer01.activity;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
@@ -20,9 +19,7 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.example.appoffer01.adapter.AdapterStoreOffer;
@@ -44,6 +41,8 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -83,8 +82,8 @@ public class MainActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
-        retrofit = new Retrofit.Builder().
-                baseUrl("https://api-offers.herokuapp.com/v01/")
+        retrofit = new Retrofit.Builder()
+                .baseUrl("https://api-offers.herokuapp.com/v01/")
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
@@ -125,6 +124,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart(){
         super.onStart();
+        stores = new ArrayList<>();
         searchAllAdressesAPI();
     }
 
@@ -286,6 +286,7 @@ public class MainActivity extends AppCompatActivity {
                         for (Integer id_store : allIdStores) {
                             if (id_store == offers.get(0).getStore().getId()) {
                                 aux++;
+                                break;
                             }
                         }
 
@@ -316,8 +317,6 @@ public class MainActivity extends AppCompatActivity {
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerViewAllStores.setLayoutManager(layoutManager);
         recyclerViewAllStores.setHasFixedSize(true);
-        recyclerViewAllStores.addItemDecoration(new DividerItemDecoration(this, LinearLayout.VERTICAL));
-
         recyclerViewAllStores.setAdapter(null);
 
         if (type == 0){
@@ -338,10 +337,11 @@ public class MainActivity extends AppCompatActivity {
                                 Store store = getStores().get(position);
 
                                 //Set new Activity
-                                Intent intent = new Intent(getApplicationContext(), OfferActivity.class);
+                                Intent intent = new Intent(getApplicationContext(), BannerOfferActivity.class);
 
                                 //Send object to next Activity
-                                intent.putExtra("store",store);
+                                intent.putExtra("store", store);
+                                intent.putExtra("address", mapAdresses.get(store.getId()));
 
                                 //Open next Activity
                                 startActivity(intent);
@@ -359,15 +359,6 @@ public class MainActivity extends AppCompatActivity {
                         }
                 )
          );
-    }
-
-    public void setOffersStores(){
-        List<Store> newStore = new ArrayList<>();
-        for (Store store : stores){
-            store.setOffers(mapOffers.get(store.getId()));
-            newStore.add(store);
-        }
-        stores = newStore;
     }
 
     public List<Store> getStores(){
