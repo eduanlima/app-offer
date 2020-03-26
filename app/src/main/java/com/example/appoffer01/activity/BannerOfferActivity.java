@@ -4,16 +4,21 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.example.appoffer01.adapter.AdapterBannerOffer;
 import com.example.appoffer01.api.model.Address;
 import com.example.appoffer01.api.model.BannerOffer;
+import com.example.appoffer01.api.model.Offer;
 import com.example.appoffer01.api.model.Store;
 import com.example.appoffer01.api.model.services.BannerOfferService;
 import com.example.appoffer01.util.PicassoTrustAll;
+import com.example.appoffer01.util.RecyclerItemClickListener;
 import com.example.appoffer10.R;
 
 import java.util.Collections;
@@ -115,5 +120,43 @@ public class BannerOfferActivity extends AppCompatActivity {
         //Define adapter
         AdapterBannerOffer adapterBannersOffer = new AdapterBannerOffer(bannersOffer, this);
         recyclerViewOffers.setAdapter(adapterBannersOffer);
+
+        //event click
+        recyclerViewOffers.addOnItemTouchListener(
+                new RecyclerItemClickListener(
+                        getApplicationContext(),
+                        recyclerViewOffers,
+                        new RecyclerItemClickListener.OnItemClickListener() {
+                            @Override
+                            public void onItemClick(View view, int position) {
+                                Store store = null;
+                                BannerOffer bannerOffer;
+
+                                bannerOffer = bannersOffer.get(position);
+
+                                //Set new Activity
+                                Intent intent = new Intent(getApplicationContext(), DetailsBannerOffer.class);
+
+                                //Send objects to next Activity
+                                intent.putExtra("store", store);
+                                intent.putExtra("address", address);
+                                intent.putExtra("bannerOffer", bannerOffer);
+
+                                //Open next Activity
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onLongItemClick(View view, int position) {
+
+                            }
+
+                            @Override
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+
+                            }
+                        }
+                )
+        );
     }
 }
