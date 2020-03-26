@@ -7,7 +7,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
@@ -20,6 +22,7 @@ import android.text.TextWatcher;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
+import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.example.appoffer01.adapter.AdapterStoreOffer;
@@ -42,7 +45,6 @@ import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -56,12 +58,12 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 public class MainActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerViewAllStores;
+    private RecyclerView recyclerView;
     private Retrofit retrofit;
     private Store store;
     private List<Address> adresses;
     private List<Integer> allIdStores = new ArrayList<>();
-    private List<Store> stores = new ArrayList<>();
+    private List<Store> stores;
     private List<Offer> allOffers  = new ArrayList<>();
     private List<Offer> offerSearch = new ArrayList<>();
     private Map<Integer, Store> mapStores = new TreeMap<>();
@@ -72,6 +74,8 @@ public class MainActivity extends AppCompatActivity {
     int PERMISSION_ID = 44;
     private Double latitude;
     private Double longitude;
+    private Byte checkAdapter;
+    private ProgressDialog progressDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -82,6 +86,9 @@ public class MainActivity extends AppCompatActivity {
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
+        //Initialize progress dialog
+        progressDialog = new ProgressDialog(MainActivity.this);
+
         retrofit = new Retrofit.Builder()
                 .baseUrl("https://api-offers.herokuapp.com/v01/")
                 .addConverterFactory(GsonConverterFactory.create())
@@ -91,7 +98,15 @@ public class MainActivity extends AppCompatActivity {
 
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                //Toast.makeText(getApplicationContext(), "On text changed", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
                 if (editTextSearch.length() > 2) {
 
                     offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
@@ -108,28 +123,28 @@ public class MainActivity extends AppCompatActivity {
                     createRecycleView(0);
                 }
             }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //Toast.makeText(getApplicationContext(), "On text changed", Toast.LENGTH_SHORT).show();
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-               // Toast.makeText(getApplicationContext(), "After changed", Toast.LENGTH_SHORT).show();
-            }
         });
     }
 
     @Override
     protected void onStart(){
         super.onStart();
-        stores = new ArrayList<>();
-        searchAllAdressesAPI();
+
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+
+        if (stores != null){
+            editTextSearch.setText("");
+            offerSearch = new ArrayList<>();
+            createRecycleView(0);
+        }
     }
 
     //Get location
-    private boolean checkPermissions() {
+    private boolean checkPermissions(){
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
                 ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -167,6 +182,14 @@ public class MainActivity extends AppCompatActivity {
                                 } else {
                                     latitude = location.getLatitude();
                                     longitude = location.getLongitude();
+
+                                    if (stores == null) {
+                                        stores = new ArrayList<>();
+                                        searchAllAdressesAPI();
+                                    }
+                                    else{
+                                        createRecycleView(0);
+                                    }
                                 }
                             }
                         }
@@ -247,6 +270,15 @@ public class MainActivity extends AppCompatActivity {
         call.enqueue(new Callback<Store>() {
             @Override
             public void onResponse(Call<Store> call, Response<Store> response) {
+                //progressDialog.setCancelable(false);
+                progressDialog.show();
+                //Set content
+                progressDialog.setContentView(R.layout.progress_dialog);
+                //Set transparent background
+                progressDialog.getWindow().setBackgroundDrawableResource(
+                        android.R.color.transparent
+                );
+
                 if (response.isSuccessful()){
                     store = response.body();
                     stores.add(store);
@@ -259,6 +291,8 @@ public class MainActivity extends AppCompatActivity {
                             for (Store store: getStores()){
                                 searchOffersAPI(store.getId());
                             }
+                            //Close progress dialog
+                            progressDialog.dismiss();
                         }
                     }
                 }
@@ -307,7 +341,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void createRecycleView(int type){
-        recyclerViewAllStores = findViewById(R.id.recyclerViewAllStores);
+
+        recyclerView = findViewById(R.id.recyclerViewAllStores);
 
         //Configure adapter
         AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, this);
@@ -315,26 +350,39 @@ public class MainActivity extends AppCompatActivity {
 
         //Configure Recycleview
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
-        recyclerViewAllStores.setLayoutManager(layoutManager);
-        recyclerViewAllStores.setHasFixedSize(true);
-        recyclerViewAllStores.setAdapter(null);
+        recyclerView.setLayoutManager(layoutManager);
+        recyclerView.setHasFixedSize(true);
+        recyclerView.setAdapter(null);
 
         if (type == 0){
-            recyclerViewAllStores.setAdapter(adapterStores);
+            recyclerView.setAdapter(adapterStores);
+            checkAdapter = 0;
         }
         else{
-           recyclerViewAllStores.setAdapter(adapterStoreOffer);
+           recyclerView.setAdapter(adapterStoreOffer);
+            checkAdapter = 1;
         }
 
         //event click
-        recyclerViewAllStores.addOnItemTouchListener(
+        recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(
                         getApplicationContext(),
-                        recyclerViewAllStores,
+                        recyclerView,
                         new RecyclerItemClickListener.OnItemClickListener() {
                             @Override
                             public void onItemClick(View view, int position) {
-                                Store store = getStores().get(position);
+                                Store store = null;
+                                Offer offer;
+                                int sector_id = 0;
+
+                                if (checkAdapter == 0){
+                                    store = stores.get(position);
+                                }
+                                else if (checkAdapter == 1){
+                                    offer = offerSearch.get(position);
+                                    store = mapStores.get(offer.getStore().getId());
+                                    sector_id = offer.getProduct().getSector().getId();
+                                }
 
                                 //Set new Activity
                                 Intent intent = new Intent(getApplicationContext(), BannerOfferActivity.class);
@@ -342,6 +390,7 @@ public class MainActivity extends AppCompatActivity {
                                 //Send object to next Activity
                                 intent.putExtra("store", store);
                                 intent.putExtra("address", mapAdresses.get(store.getId()));
+                                intent.putExtra("sector", sector_id);
 
                                 //Open next Activity
                                 startActivity(intent);

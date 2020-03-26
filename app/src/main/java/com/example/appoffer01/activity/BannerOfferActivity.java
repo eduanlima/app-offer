@@ -16,6 +16,7 @@ import com.example.appoffer01.api.model.services.BannerOfferService;
 import com.example.appoffer01.util.PicassoTrustAll;
 import com.example.appoffer10.R;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
@@ -32,6 +33,7 @@ public class BannerOfferActivity extends AppCompatActivity {
     private Retrofit retrofit;
     private Store store;
     private List<BannerOffer> bannersOffer;
+    private int sector_id = 0;
     private String address;
     private ImageView imageViewBrand;
     private TextView textViewStore;
@@ -48,11 +50,12 @@ public class BannerOfferActivity extends AppCompatActivity {
                 .build();
 
         //Get object from previous Activity
-        Bundle storeBundle = getIntent().getExtras();
+        Bundle bundle = getIntent().getExtras();
 
         //Get object from Bundle
-        store = (Store) storeBundle.getSerializable("store");
-        address = storeBundle.getString("address");
+        store = (Store) bundle.getSerializable("store");
+        address = bundle.getString("address");
+        sector_id = bundle.getInt("sector");
 
         imageViewBrand = findViewById(R.id.imageViewBrand);
         PicassoTrustAll.getInstance(this).load(store.getImage()).into(imageViewBrand);
@@ -74,7 +77,7 @@ public class BannerOfferActivity extends AppCompatActivity {
     }
 
     public void searchBannersOffer(){
-        BannerOfferService bannerOfferService = retrofit.create(BannerOfferService.class);
+        final BannerOfferService bannerOfferService = retrofit.create(BannerOfferService.class);
         Call<List<BannerOffer>> call = bannerOfferService.searchBanners(store.getId());
 
         call.enqueue(new Callback<List<BannerOffer>>() {
@@ -82,6 +85,19 @@ public class BannerOfferActivity extends AppCompatActivity {
             public void onResponse(Call<List<BannerOffer>> call, Response<List<BannerOffer>> response) {
                 if (response.isSuccessful()){
                     bannersOffer = response.body();
+
+                    int position = 0;
+
+                    if (sector_id != 0){
+                        for (int i = 0; i < bannersOffer.size(); i++){
+                            if (bannersOffer.get(i).getSector().getId() == sector_id){
+                                position = i;
+                                break;
+                            }
+                        }
+
+                        Collections.swap(bannersOffer, 0, position);
+                    }
                     createRecycleView();
                 }
             }
