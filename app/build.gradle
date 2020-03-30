@@ -42,7 +42,6 @@ dependencies {
     //Maps location
     implementation 'com.google.android.gms:play-services-location:17.0.0'
 
-    //Zoom image view
-    implementation 'com.davemorrissey.labs:subsampling-scale-image-view:3.10.0'
-    implementation 'com.zolad:zoominimageview:1.0.0'
+    //Photo view
+    implementation 'com.github.chrisbanes:PhotoView:2.3.0'
 }

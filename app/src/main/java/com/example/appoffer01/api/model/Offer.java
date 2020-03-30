@@ -1,7 +1,6 @@
 package com.example.appoffer01.api.model;
 
 import java.io.Serializable;
-import java.util.Date;
 
 public class Offer implements Serializable, Comparable<Offer>{
 
@@ -9,15 +8,15 @@ public class Offer implements Serializable, Comparable<Offer>{
 	private Store store;
 	private Product product;
 	private Double price;
-	private Date dateInitial;
-	private Date dateLimit;
+	private String dateInitial;
+	private String dateLimit;
 	private String image;
 	private Boolean status;
 	
 	public Offer() {}
 
-	public Offer(Store store, Product product, Double price, Date dateInitial, Date dateLimit, String image,
-			Boolean status) {
+	public Offer(Store store, Product product, Double price, String dateInitial, String dateLimit, String image,
+				 Boolean status) {
 		super();
 		this.store = store;
 		this.product = product;
@@ -52,19 +51,19 @@ public class Offer implements Serializable, Comparable<Offer>{
 		this.price = price;
 	}
 
-	public Date getDateInitial() {
+	public String getDateInitial() {
 		return dateInitial;
 	}
 
-	public void setDateInitial(Date dateInitial) {
+	public void setDateInitial(String dateInitial) {
 		this.dateInitial = dateInitial;
 	}
 
-	public Date getDateLimit() {
+	public String getDateLimit() {
 		return dateLimit;
 	}
 
-	public void setDateLimit(Date dateLimit) {
+	public void setDateLimit(String dateLimit) {
 		this.dateLimit = dateLimit;
 	}
 

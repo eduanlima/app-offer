@@ -9,25 +9,27 @@ import android.Manifest;
 import android.annotation.SuppressLint;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.location.Location;
 import android.location.LocationManager;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
-
 import com.example.appoffer01.adapter.AdapterStoreOffer;
 import com.example.appoffer01.api.model.Address;
 import com.example.appoffer01.api.model.Offer;
+import com.example.appoffer01.api.model.Product;
+import com.example.appoffer01.api.model.Sector;
+import com.example.appoffer01.api.model.TypeStore;
 import com.example.appoffer01.api.model.services.AddressService;
 import com.example.appoffer01.api.model.services.OfferService;
 import com.example.appoffer01.util.FilterAddress;
@@ -44,30 +46,32 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
+import com.google.gson.JsonObject;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
-import retrofit2.converter.gson.GsonConverterFactory;
-
 public class MainActivity extends AppCompatActivity {
 
     private RecyclerView recyclerView;
-    private Retrofit retrofit;
-    private Store store;
     private List<Address> adresses;
     private List<Integer> allIdStores = new ArrayList<>();
     private List<Store> stores;
     private List<Offer> allOffers  = new ArrayList<>();
     private List<Offer> offerSearch = new ArrayList<>();
     private Map<Integer, Store> mapStores = new TreeMap<>();
-    private Map<Integer, List<Offer>> mapOffers =  new TreeMap<>();
     private Map<Integer, String> mapAdresses = new TreeMap<>();
     private EditText editTextSearch;
     FusedLocationProviderClient mFusedLocationClient;
@@ -76,6 +80,8 @@ public class MainActivity extends AppCompatActivity {
     private Double longitude;
     private Byte checkAdapter;
     private ProgressDialog progressDialog;
+
+    private final String URL_API = "https://api-offers.herokuapp.com/v01/";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -88,11 +94,6 @@ public class MainActivity extends AppCompatActivity {
 
         //Initialize progress dialog
         progressDialog = new ProgressDialog(MainActivity.this);
-
-        retrofit = new Retrofit.Builder()
-                .baseUrl("https://api-offers.herokuapp.com/v01/")
-                .addConverterFactory(GsonConverterFactory.create())
-                .build();
 
         editTextSearch = findViewById(R.id.editTextSearch);
 
@@ -129,7 +130,6 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onStart(){
         super.onStart();
-
     }
 
     @Override
@@ -183,13 +183,10 @@ public class MainActivity extends AppCompatActivity {
                                     latitude = location.getLatitude();
                                     longitude = location.getLongitude();
 
-                                    if (stores == null) {
-                                        stores = new ArrayList<>();
-                                        searchAllAdressesAPI();
-                                    }
-                                    else{
-                                        createRecycleView(0);
-                                    }
+                                    showProgressDialog();
+
+                                    TaskGetAdresses taskGetAdresses = new TaskGetAdresses();
+                                    taskGetAdresses.execute("adresses");
                                 }
                             }
                         }
@@ -236,109 +233,6 @@ public class MainActivity extends AppCompatActivity {
             Location mLastLocation = locationResult.getLastLocation();
         }
     };
-
-    public void searchAllAdressesAPI(){
-        AddressService addressService = retrofit.create(AddressService.class);
-        Call<List<Address>> call = addressService.searchAdresses();
-
-        call.enqueue(new Callback<List<Address>>() {
-            @Override
-            public void onResponse(Call<List<Address>> call, Response<List<Address>> response) {
-                if (response.isSuccessful()){
-                    adresses = response.body();
-
-                    adresses = FilterAddress.filterAdresses(adresses, latitude, longitude);
-
-                    for (Address address : adresses){
-                        mapAdresses.put(address.getId(), address.getAddress());
-                        searchStoreAPI(address.getId());
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Address>> call, Throwable t) {}
-        });
-    }
-
-    private void searchStoreAPI(Integer id_store){
-        final int totalAdresses = adresses.size();
-
-        StoreService storeService = retrofit.create(StoreService.class);
-        Call<Store> call = storeService.searchStore(id_store);
-
-        call.enqueue(new Callback<Store>() {
-            @Override
-            public void onResponse(Call<Store> call, Response<Store> response) {
-                //progressDialog.setCancelable(false);
-                progressDialog.show();
-                //Set content
-                progressDialog.setContentView(R.layout.progress_dialog);
-                //Set transparent background
-                progressDialog.getWindow().setBackgroundDrawableResource(
-                        android.R.color.transparent
-                );
-
-                if (response.isSuccessful()){
-                    store = response.body();
-                    stores.add(store);
-                    mapStores.put(store.getId(), store);
-
-                    if (stores.size() == totalAdresses){
-                        createRecycleView(0);
-
-                        if (mapAdresses.size() != allIdStores.size()){
-                            for (Store store: getStores()){
-                                searchOffersAPI(store.getId());
-                            }
-                            //Close progress dialog
-                            progressDialog.dismiss();
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<Store> call, Throwable t) {}
-        });
-    }
-
-    public void searchOffersAPI(Integer id_store){
-        OfferService offerService = retrofit.create(OfferService.class);
-        Call<List<Offer>> call = offerService.searchOffers(id_store);
-
-        call.enqueue(new Callback<List<Offer>>() {
-            @Override
-            public void onResponse(Call<List<Offer>> call, Response<List<Offer>> response) {
-                List<Offer> offers;
-
-                if (response.isSuccessful()) {
-                    offers = response.body();
-
-                    if (offers != null) {
-                        int aux = 0;
-                        for (Integer id_store : allIdStores) {
-                            if (id_store == offers.get(0).getStore().getId()) {
-                                aux++;
-                                break;
-                            }
-                        }
-
-                        if (aux == 0) {
-                            allIdStores.add(offers.get(0).getStore().getId());
-                        }
-
-                        for (Offer offer: offers){
-                            allOffers.add(offer);
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<Offer>> call, Throwable t) {}
-        });
-    }
 
     private void createRecycleView(int type){
 
@@ -410,11 +304,321 @@ public class MainActivity extends AppCompatActivity {
          );
     }
 
-    public List<Store> getStores(){
-        return stores;
+    public void showProgressDialog(){
+        //progressDialog.setCancelable(false);
+        progressDialog.show();
+        //Set content
+        progressDialog.setContentView(R.layout.progress_dialog);
+        //Set transparent background
+        progressDialog.getWindow().setBackgroundDrawableResource(
+                android.R.color.transparent
+        );
     }
 
     public void setStores(List<Store> stores){
         this.stores = stores;
+    }
+
+    class TaskGetAdresses extends AsyncTask<String, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(String... strings) {
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer stringBuffer = null;
+
+            try {
+                //Create an url
+                URL url = new URL(URL_API + strings[0]);
+
+                //Open a connection with object url
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                //Get response dates as bytes
+                inputStream = httpURLConnection.getInputStream();
+
+                //Convert inputStream from bytes to characters
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                //Create buffer for read characters
+                bufferedReader = new BufferedReader(inputStreamReader);
+
+                stringBuffer = new StringBuffer();
+
+                String line = "";
+
+                while ((line = bufferedReader.readLine()) != null){
+                    stringBuffer.append(line);
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            return stringBuffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            List<Address> adressesSearch = new ArrayList<>();
+            Address address = null;
+
+            try {
+                JSONObject jsonObject = null;
+                JSONArray jsonArray = new JSONArray(s);
+
+                for (int i = 0; i < jsonArray.length(); i++) {
+                    jsonObject = jsonArray.getJSONObject(i);
+                    address = new Address();
+                    address.setId(jsonObject.getInt("id"));
+                    address.setAddress(jsonObject.getString("address"));
+                    address.setLatitude(jsonObject.getDouble("latitude"));
+                    address.setLongitude(jsonObject.getDouble("longitude"));
+                    adressesSearch.add(address);
+                }
+
+                adresses = adressesSearch;
+                adresses = FilterAddress.filterAdresses(adresses, latitude, longitude);
+
+                for (Address addr : adresses){
+                    mapAdresses.put(addr.getId(), addr.getAddress());
+                    TaskGetStore taskGetStore = new TaskGetStore();
+                    taskGetStore.execute(addr.getId());
+                }
+
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    class TaskGetStore extends AsyncTask<Integer, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer stringBuffer = null;
+
+            try{
+                //Create URL
+                URL url = new URL(URL_API + "stores/" + integers[0]);
+
+                //Open a connection with object url
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                //Get response dates as bytes
+                inputStream = httpURLConnection.getInputStream();
+
+                //Convert inputStream from bytes to characters
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                //Create buffer for read characters
+                bufferedReader = new BufferedReader(inputStreamReader);
+
+                stringBuffer = new StringBuffer();
+
+                String line = "";
+
+                while ((line = bufferedReader.readLine()) != null){
+                    stringBuffer.append(line);
+                }
+
+            }catch(MalformedURLException e){
+                e.printStackTrace();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+
+            return stringBuffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            Store store = new Store();
+            TypeStore typeStore = null;
+
+            if (stores == null){
+                stores = new ArrayList<>();
+            }
+
+            try{
+                JSONObject jsonObject = new JSONObject(s);
+                JSONObject jsonObjectType = jsonObject.getJSONObject("type");
+
+                store = new Store();
+                store.setId(jsonObject.getInt("id"));
+                store.setImage(jsonObject.getString("image"));
+                store.setName(jsonObject.getString("name"));
+                store.setOffers(null);
+                typeStore = new TypeStore();
+                typeStore.setId(jsonObjectType.getInt("id"));
+                store.setType(typeStore);
+
+                stores.add(store);
+
+                mapStores.put(store.getId(), store);
+
+                if (stores.size() == mapAdresses.size()){
+                    createRecycleView(0);
+
+                    if (mapAdresses.size() != allIdStores.size()){
+                        for (Store storeT: stores){
+                            TaskGetOffers taskGetOffers = new TaskGetOffers();
+                            taskGetOffers.execute(storeT.getId());
+                        }
+                    }
+                }
+
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
+    }
+
+    class TaskGetOffers extends AsyncTask<Integer, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer stringBuffer = null;
+
+            try{
+                //Create an url
+                URL url = new URL(URL_API + "offers/" + integers[0]);
+
+                //Open a connection with object url
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                //Get response dates as bytes
+                inputStream = httpURLConnection.getInputStream();
+
+                //Convert inputStream from bytes to characters
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                //Create buffer for read characters
+                bufferedReader = new BufferedReader(inputStreamReader);
+
+                stringBuffer = new StringBuffer();
+
+                String line = "";
+
+                while ((line = bufferedReader.readLine()) != null){
+                    stringBuffer.append(line);
+                }
+
+            }catch(MalformedURLException e){
+                e.printStackTrace();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+
+            return stringBuffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            Store store = null;
+            Sector sector = null;
+            Product product = null;
+            Offer offer = null;
+            List<Offer> offers = new ArrayList<>();
+
+            try{
+                JSONObject jsonObjectStore = null;
+                JSONObject jsonObjectSector = null;
+                JSONObject jsonObjectProduct = null;
+                JSONObject jsonObjectOffer = null;
+
+                JSONArray jsonArray = new JSONArray(s);
+
+                Log.d("Json array", "" + jsonArray.length());
+
+                for (int i = 0; i < jsonArray.length(); i++){
+                    jsonObjectOffer = jsonArray.getJSONObject(i);
+
+                    offer = new Offer();
+                    offer.setDateInitial(jsonObjectOffer.getString("dateInitial"));
+                    offer.setDateLimit(jsonObjectOffer.getString("dateLimit"));
+                    offer.setImage(jsonObjectOffer.getString("image"));
+                    offer.setPrice(jsonObjectOffer.getDouble("price"));
+
+                    jsonObjectProduct = jsonObjectOffer.getJSONObject("product");
+                    product = new Product();
+                    product.setDescription(jsonObjectProduct.getString("description"));
+                    product.setId(jsonObjectProduct.getInt("id"));
+
+                    jsonObjectSector = jsonObjectProduct.getJSONObject("sector");
+                    sector = new Sector();
+                    sector.setId(jsonObjectSector.getInt("id"));
+
+                    product.setSector(sector);
+
+                    offer.setProduct(product);
+
+                    offer.setStatus(jsonObjectOffer.getBoolean("status"));
+
+                    jsonObjectStore = jsonObjectOffer.getJSONObject("store");
+                    store = new Store();
+                    store.setId(jsonObjectStore.getInt("id"));
+
+                    offer.setStore(store);
+
+                    offers.add(offer);
+                }
+
+                if (offers != null) {
+                    int aux = 0;
+                    for (Integer id_store : allIdStores) {
+                        if (id_store == offers.get(0).getStore().getId()) {
+                            aux++;
+                            break;
+                        }
+                    }
+
+                    if (aux == 0) {
+                        allIdStores.add(offers.get(0).getStore().getId());
+                    }
+
+                    for (Offer offerR: offers){
+                        allOffers.add(offerR);
+                    }
+                }
+
+
+                if (mapAdresses.size() == allIdStores.size()){
+                    //Close progress dialog
+                    progressDialog.dismiss();
+                }
+
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+        }
     }
 }
