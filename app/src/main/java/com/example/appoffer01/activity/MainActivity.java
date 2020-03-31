@@ -76,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
     private Byte checkAdapter;
     private ProgressDialog progressDialog;
 
+    /*Constant url api*/
     private final String URL_API = "https://api-offers.herokuapp.com/v01/";
 
     @Override
@@ -83,34 +84,38 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //Get location
+        /*Get location*/
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
         getLastLocation();
 
-        //Initialize progress dialog
+        /*Initialize progress dialog*/
         progressDialog = new ProgressDialog(MainActivity.this);
 
+        /*Edit text to search offers and stores*/
         editTextSearch = findViewById(R.id.editTextSearch);
 
+        /*Set action on text change in edit text*/
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence s, int start, int count, int after) { }
 
             @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                //Toast.makeText(getApplicationContext(), "On text changed", Toast.LENGTH_SHORT).show();
-            }
+            public void onTextChanged(CharSequence s, int start, int before, int count) {}
 
             @Override
             public void afterTextChanged(Editable s) {
+                /*The search will be work from three characters*/
                 if (editTextSearch.length() > 2) {
 
+                    /*This list contains all items was returned from method "orderByPrice"*/
                     offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
 
                     if (offerSearch != null){
+                        /*Show all offers into 'recycleView'*/
                         createRecycleView(1);
                     }
                     else{
+                        /*If there is not any offer found*/
                         Toast.makeText(getApplicationContext(), "Produto não encontrado",  Toast.LENGTH_SHORT).show();
                         createRecycleView(0);
                     }
@@ -130,7 +135,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume(){
         super.onResume();
-
+        /*Is list stores is full, it is possible show all stores*/
         if (stores != null){
             editTextSearch.setText("");
             offerSearch = new ArrayList<>();
@@ -138,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    //Get location
+    /*Get location: begin*/
     private boolean checkPermissions(){
         if (ActivityCompat.checkSelfPermission(this,
                 Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED &&
@@ -228,23 +233,28 @@ public class MainActivity extends AppCompatActivity {
             Location mLastLocation = locationResult.getLastLocation();
         }
     };
+    /*Get location: end*/
 
     private void createRecycleView(int type){
 
         recyclerView = findViewById(R.id.recyclerViewAllStores);
 
-        //Configure adapter
+        /*Configure adapter*/
         AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, this);
         AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapAdresses, this);
 
-        //Configure Recycleview
+        /*Configure Recycleview*/
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(null);
 
+        /*The 'type' variable defines the way the listing will be displayed,
+         whether by stores (type == 0) or offers (type == 1)*/
         if (type == 0){
             recyclerView.setAdapter(adapterStores);
+            /*The 'checkAdapter' variable defines what the action will be when
+            clicking on the 'recyclerView' element*/
             checkAdapter = 0;
         }
         else{
@@ -252,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
             checkAdapter = 1;
         }
 
-        //event click
+        /*Set event click into each element 'recyclerView'*/
         recyclerView.addOnItemTouchListener(
                 new RecyclerItemClickListener(
                         getApplicationContext(),
@@ -262,26 +272,30 @@ public class MainActivity extends AppCompatActivity {
                             public void onItemClick(View view, int position) {
                                 Store store = null;
                                 Offer offer;
+                                /*This variable defines what the first banner offer in the next activity
+                                 for sector_id == 0, display banners on standard order*/
                                 int sector_id = 0;
 
+                                /*Open next activity on click store*/
                                 if (checkAdapter == 0){
                                     store = stores.get(position);
                                 }
+                                /*Open next activity on click offer*/
                                 else if (checkAdapter == 1){
                                     offer = offerSearch.get(position);
                                     store = mapStores.get(offer.getStore().getId());
                                     sector_id = offer.getProduct().getSector().getId();
                                 }
 
-                                //Set new Activity
+                                /*Set new Activity*/
                                 Intent intent = new Intent(getApplicationContext(), BannerOfferActivity.class);
 
-                                //Send object to next Activity
+                                /*Send object to next Activity*/
                                 intent.putExtra("store", store);
                                 intent.putExtra("address", mapAdresses.get(store.getId()));
                                 intent.putExtra("sector", sector_id);
 
-                                //Open next Activity
+                                /*Open next Activity*/
                                 startActivity(intent);
                             }
 
@@ -296,20 +310,20 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void showProgressDialog(){
-        //progressDialog.setCancelable(false);
         progressDialog.show();
-        //Set content
+        /*Set content*/
         progressDialog.setContentView(R.layout.progress_dialog);
-        //Set transparent background
+        /*Set transparent background*/
         progressDialog.getWindow().setBackgroundDrawableResource(
                 android.R.color.transparent
         );
     }
 
-    public void setStores(List<Store> stores){
-        this.stores = stores;
+    public void closeProgressDialog(){
+        progressDialog.dismiss();
     }
 
+    /*This async task return a list of all adresses from api*/
     class TaskGetAdresses extends AsyncTask<String, Void, String>{
         @Override
         protected void onPreExecute() {
@@ -324,24 +338,24 @@ public class MainActivity extends AppCompatActivity {
             StringBuffer stringBuffer = null;
 
             try {
-                //Create an url
+                /*Create an url*/
                 URL url = new URL(URL_API + strings[0]);
 
-                //Open a connection with object url
+                /*Open a connection with object url*/
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
-                //Get response dates as bytes
+                /*Get response dates as bytes*/
                 inputStream = httpURLConnection.getInputStream();
 
-                //Convert inputStream from bytes to characters
+                /*Convert inputStream from bytes to characters*/
                 inputStreamReader = new InputStreamReader(inputStream);
 
-                //Create buffer for read characters
+                /*Create buffer for read characters*/
                 bufferedReader = new BufferedReader(inputStreamReader);
 
                 stringBuffer = new StringBuffer();
 
-                String line = "";
+                String line;
 
                 while ((line = bufferedReader.readLine()) != null){
                     stringBuffer.append(line);
@@ -393,6 +407,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*This async task return one store from api through id*/
     class TaskGetStore extends AsyncTask<Integer, Void, String>{
         @Override
         protected void onPreExecute() {
@@ -407,24 +422,24 @@ public class MainActivity extends AppCompatActivity {
             StringBuffer stringBuffer = null;
 
             try{
-                //Create URL
+                /*Create URL*/
                 URL url = new URL(URL_API + "stores/" + integers[0]);
 
-                //Open a connection with object url
+                /*Open a connection with object url*/
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
-                //Get response dates as bytes
+                /*Get response dates as bytes*/
                 inputStream = httpURLConnection.getInputStream();
 
-                //Convert inputStream from bytes to characters
+                /*Convert inputStream from bytes to characters*/
                 inputStreamReader = new InputStreamReader(inputStream);
 
-                //Create buffer for read characters
+                /*Create buffer for read characters*/
                 bufferedReader = new BufferedReader(inputStreamReader);
 
                 stringBuffer = new StringBuffer();
 
-                String line = "";
+                String line;
 
                 while ((line = bufferedReader.readLine()) != null){
                     stringBuffer.append(line);
@@ -484,6 +499,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    /*This async task return a list of offers from api through id store */
     class TaskGetOffers extends AsyncTask<Integer, Void, String>{
         @Override
         protected void onPreExecute() {
@@ -498,24 +514,24 @@ public class MainActivity extends AppCompatActivity {
             StringBuffer stringBuffer = null;
 
             try{
-                //Create an url
+                /*Create an url*/
                 URL url = new URL(URL_API + "offers/" + integers[0]);
 
-                //Open a connection with object url
+                /*Open a connection with object url*/
                 HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
 
-                //Get response dates as bytes
+                /*Get response dates as bytes*/
                 inputStream = httpURLConnection.getInputStream();
 
-                //Convert inputStream from bytes to characters
+                /*Convert inputStream from bytes to characters*/
                 inputStreamReader = new InputStreamReader(inputStream);
 
-                //Create buffer for read characters
+                /*Create buffer for read characters*/
                 bufferedReader = new BufferedReader(inputStreamReader);
 
                 stringBuffer = new StringBuffer();
 
-                String line = "";
+                String line;
 
                 while ((line = bufferedReader.readLine()) != null){
                     stringBuffer.append(line);
@@ -548,6 +564,7 @@ public class MainActivity extends AppCompatActivity {
 
                 JSONArray jsonArray = new JSONArray(s);
 
+                /*Add items offer into list offer*/
                 for (int i = 0; i < jsonArray.length(); i++){
                     jsonObjectOffer = jsonArray.getJSONObject(i);
 
@@ -581,8 +598,13 @@ public class MainActivity extends AppCompatActivity {
                     offers.add(offer);
                 }
 
+                /*If there will be offers, this offers will be add in another list with all offers
+                 independent stores*/
                 if (offers != null) {
                     int aux = 0;
+
+                    /*The array 'allIdStores' contains all id of stores that have already had their
+                    offers added to the list of 'allOffers'*/
                     for (Integer id_store : allIdStores) {
                         if (id_store == offers.get(0).getStore().getId()) {
                             aux++;
@@ -590,19 +612,21 @@ public class MainActivity extends AppCompatActivity {
                         }
                     }
 
+                    /*If the store has not yet had its offers added to the list 'allOffers' and
+                    its id added to the array 'allIdStores'*/
                     if (aux == 0) {
                         allIdStores.add(offers.get(0).getStore().getId());
                     }
 
-                    for (Offer offerR: offers){
-                        allOffers.add(offerR);
+                    for (Offer offerAll: offers){
+                        allOffers.add(offerAll);
                     }
                 }
 
-
+                /*If all offers already added into 'allOffers'*/
                 if (mapAdresses.size() == allIdStores.size()){
                     //Close progress dialog
-                    progressDialog.dismiss();
+                    closeProgressDialog();
                 }
 
             }catch(JSONException e){

@@ -1,10 +1,13 @@
 package com.example.appoffer01.util;
 
 public class CalculatesDistance {
+
+	/*This method calculate the distance between two points through coordinates*/
 	public static double distance(double lat1, double lat2, double lon1,
 	        double lon2, double el1, double el2) {
 
-	    final int R = 6371; // Radius of the earth
+		/*Earth radius*/
+	    final int R = 6371;
 
 	    double latDistance = Math.toRadians(lat2 - lat1);
 	    double lonDistance = Math.toRadians(lon2 - lon1);
@@ -13,7 +16,9 @@ public class CalculatesDistance {
 	            + Math.cos(Math.toRadians(lat1)) * Math.cos(Math.toRadians(lat2))
 	            * Math.sin(lonDistance / 2) * Math.sin(lonDistance / 2);
 	    double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-	    double distance = R * c * 1000; // convert to meters
+
+	    /*Convert to meters*/
+	    double distance = R * c * 1000;
 
 	    double height = el1 - el2;
 
