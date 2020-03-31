@@ -1,10 +1,7 @@
 package com.example.appoffer01.util;
 
 import com.example.appoffer01.api.model.Offer;
-import com.example.appoffer01.api.model.Store;
-import com.example.appoffer01.model.OfferSearch;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

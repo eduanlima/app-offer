@@ -30,14 +30,11 @@ import com.example.appoffer01.api.model.Offer;
 import com.example.appoffer01.api.model.Product;
 import com.example.appoffer01.api.model.Sector;
 import com.example.appoffer01.api.model.TypeStore;
-import com.example.appoffer01.api.model.services.AddressService;
-import com.example.appoffer01.api.model.services.OfferService;
 import com.example.appoffer01.util.FilterAddress;
 import com.example.appoffer01.util.OrderOffers;
 import com.example.appoffer10.R;
 import com.example.appoffer01.adapter.AdapterStores;
 import com.example.appoffer01.api.model.Store;
-import com.example.appoffer01.api.model.services.StoreService;
 import com.example.appoffer01.util.RecyclerItemClickListener;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
@@ -46,8 +43,6 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
-import com.google.gson.JsonObject;
-
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -291,14 +286,10 @@ public class MainActivity extends AppCompatActivity {
                             }
 
                             @Override
-                            public void onLongItemClick(View view, int position) {
-
-                            }
+                            public void onLongItemClick(View view, int position) {}
 
                             @Override
-                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-
-                            }
+                            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {}
                         }
                 )
          );
@@ -556,8 +547,6 @@ public class MainActivity extends AppCompatActivity {
                 JSONObject jsonObjectOffer = null;
 
                 JSONArray jsonArray = new JSONArray(s);
-
-                Log.d("Json array", "" + jsonArray.length());
 
                 for (int i = 0; i < jsonArray.length(); i++){
                     jsonObjectOffer = jsonArray.getJSONObject(i);
