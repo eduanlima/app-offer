@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/red_main"/>
+            <size android:width="40dp" android:height="40dp" />
+        </shape>
+    </item>
+    <item android:gravity="center_horizontal|center_vertical"
+          android:drawable="@drawable/ic_dehaze"/>
+</layer-list>

@@ -6,28 +6,26 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-
 import com.example.appoffer10.R;
 import com.example.appoffer01.api.model.Store;
 import com.example.appoffer01.util.PicassoTrustAll;
-
 import java.util.List;
 import java.util.Map;
-import java.util.TreeMap;
 
 public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHolder>{
 
     private List<Store> stores;
     private Map<Integer, String> mapAdresses;
+    private Map<Integer, Double> mapDistance;
     private Context context;
 
-    public AdapterStores(List<Store> stores, Map<Integer, String> mapAdresses, Context context) {
+    public AdapterStores(List<Store> stores, Map<Integer, String> mapAdresses, Map<Integer, Double> mapDistance,Context context) {
 
         this.stores = stores;
         this.mapAdresses = mapAdresses;
+        this.mapDistance = mapDistance;
         this.context = context;
     }
 
@@ -45,8 +43,9 @@ public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHold
     @Override
     public void onBindViewHolder(@NonNull MyViewHolder holder, int position) {
         Store store = stores.get(position);
-        holder.name.setText(store.getName());
-        holder.address.setText(mapAdresses.get(store.getId()));
+        holder.textViewName.setText(store.getName());
+        holder.textViewAddress.setText(mapAdresses.get(store.getId()));
+        holder.textViewDistance.setText(String.format("%.2f", mapDistance.get(store.getId())).replace(".",",") + " km");
         PicassoTrustAll.getInstance(context).load(store.getImage()).into(holder.imageViewBrand);
     }
 
@@ -57,15 +56,17 @@ public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHold
 
     public class MyViewHolder extends RecyclerView.ViewHolder{
 
-        TextView name;
-        TextView address;
+        TextView textViewName;
+        TextView textViewDistance;
+        TextView textViewAddress;
         ImageView imageViewBrand;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            name = itemView.findViewById(R.id.textViewName);
-            address = itemView.findViewById(R.id.textViewAddress);
+            textViewName = itemView.findViewById(R.id.textViewName);
+            textViewDistance = itemView.findViewById(R.id.textViewDistance);
+            textViewAddress = itemView.findViewById(R.id.textViewAddress);
             imageViewBrand = itemView.findViewById(R.id.imageViewBrand);
         }
     }

@@ -20,32 +20,54 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="30px"
-            android:orientation="vertical">
+            android:layout_marginBottom="0dp"
+            android:orientation="vertical"
+            android:paddingLeft="8dp"
+            android:paddingRight="8dp">
 
-            <EditText
-                android:id="@+id/editTextSearch"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="45dp"
-                android:layout_marginStart="8dp"
-                android:layout_marginLeft="8dp"
-                android:layout_marginTop="24dp"
-                android:layout_marginEnd="8dp"
-                android:layout_marginRight="8dp"
-                android:ems="10"
-                android:hint="Pesquise pelo produto..."
-                android:inputType="textPersonName" />
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:layout_weight="0"
+                android:background="@drawable/li_search_bg"
+                android:orientation="horizontal"
+                android:padding="5dp"
+                android:paddingLeft="0dp"
+                android:paddingRight="0dp"
+                android:weightSum="0">
+
+                <EditText
+                    android:id="@+id/editTextSearch"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginLeft="0dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginRight="8dp"
+                    android:layout_weight="1"
+                    android:background="@null"
+                    android:hint="Pesquise pelo produto..."
+                    android:paddingLeft="8dp" />
+
+                <Button
+                    android:id="@+id/btt_option"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_marginRight="0dp"
+                    android:layout_weight="0"
+                    android:background="@drawable/btt_rounded_bg"
+                    android:elevation="5dp" />
+            </LinearLayout>
+
         </LinearLayout>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewAllStores"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:layout_marginStart="8dp"
-            android:layout_marginLeft="8dp"
-            android:layout_marginEnd="8dp"
-            android:layout_marginRight="8dp"
-            android:animateLayoutChanges="false"/>
+            android:layout_marginTop="10dp"
+            android:animateLayoutChanges="false" />
 
     </LinearLayout>
 

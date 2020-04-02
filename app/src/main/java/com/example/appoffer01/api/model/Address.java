@@ -2,22 +2,24 @@ package com.example.appoffer01.api.model;
 
 import java.io.Serializable;
 
-public class Address implements Serializable{
+public class Address implements Serializable, Comparable<Address>{
 	
 	private static final long serialVersionUID = 1L;
 	private Integer id;
 	private String address;
 	private Double latitude;
 	private Double longitude;
+	private Double distance;
 	
 	public Address() {}
 	
-	public Address(Integer id, String address, Double latitude, Double longitude) {
+	public Address(Integer id, String address, Double latitude, Double longitude, Double distance) {
 		super();
 		this.id = id;
 		this.address = address;
 		this.latitude = latitude;
 		this.longitude = longitude;
+		this.distance = distance;
 	}
 
 	public Integer getId() {
@@ -52,6 +54,12 @@ public class Address implements Serializable{
 		this.longitude = longitude;
 	}
 
+	public Double getDistance() {
+		return distance;
+	}
+
+	public void setDistance(Double distance) { this.distance = distance; }
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -76,5 +84,9 @@ public class Address implements Serializable{
 			return false;
 		return true;
 	}
-	
+
+	@Override
+	public int compareTo(Address o) {
+		return distance.compareTo(o.getDistance());
+	}
 }

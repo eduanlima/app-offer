@@ -68,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
     private List<Offer> offerSearch = new ArrayList<>();
     private Map<Integer, Store> mapStores = new TreeMap<>();
     private Map<Integer, String> mapAdresses = new TreeMap<>();
+    private Map<Integer, Double> mapDistance = new TreeMap<>();
     private EditText editTextSearch;
     FusedLocationProviderClient mFusedLocationClient;
     int PERMISSION_ID = 44;
@@ -240,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewAllStores);
 
         /*Configure adapter*/
-        AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, this);
+        AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, mapDistance, this);
         AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapAdresses, this);
 
         /*Configure Recycleview*/
@@ -396,6 +397,7 @@ public class MainActivity extends AppCompatActivity {
 
                 for (Address addr : adresses){
                     mapAdresses.put(addr.getId(), addr.getAddress());
+                    mapDistance.put(addr.getId(), addr.getDistance());
                     TaskGetStore taskGetStore = new TaskGetStore();
                     taskGetStore.execute(addr.getId());
                 }
