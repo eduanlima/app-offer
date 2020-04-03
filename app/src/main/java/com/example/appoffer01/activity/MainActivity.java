@@ -242,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
 
         /*Configure adapter*/
         AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, mapDistance, this);
-        AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapAdresses, this);
+        AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapDistance, this);
 
         /*Configure Recycleview*/
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());

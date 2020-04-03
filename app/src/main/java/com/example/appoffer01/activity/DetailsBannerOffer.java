@@ -31,7 +31,7 @@ public class DetailsBannerOffer extends AppCompatActivity {
         super.onStart();
 
         //Set image
-        photoView = findViewById(R.id.imageViewBannerOffer);
+        photoView = findViewById(R.id.imageViewOffer);
         PicassoTrustAll.getInstance(this).load(bannerOffer.getImage()).into(photoView);
     }
 }

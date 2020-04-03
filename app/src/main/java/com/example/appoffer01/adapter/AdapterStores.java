@@ -22,7 +22,6 @@ public class AdapterStores extends RecyclerView.Adapter<AdapterStores.MyViewHold
     private Context context;
 
     public AdapterStores(List<Store> stores, Map<Integer, String> mapAdresses, Map<Integer, Double> mapDistance,Context context) {
-
         this.stores = stores;
         this.mapAdresses = mapAdresses;
         this.mapDistance = mapDistance;

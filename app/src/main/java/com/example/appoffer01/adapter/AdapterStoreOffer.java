@@ -21,13 +21,13 @@ import java.util.Map;
 public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.MyViewHolder> {
     private List<Offer> offers;
     private Map<Integer, Store> mapStores;
-    private Map<Integer, String> mapAdresses;
+    private Map<Integer, Double> mapDistance;
     private Context context;
 
-    public AdapterStoreOffer(List<Offer> offers, Map<Integer, Store> mapStores, Map<Integer, String> mapAdresses, Context context){
+    public AdapterStoreOffer(List<Offer> offers, Map<Integer, Store> mapStores, Map<Integer, Double> mapDistance, Context context){
         this.offers = offers;
         this.mapStores = mapStores;
-        this.mapAdresses = mapAdresses;
+        this.mapDistance = mapDistance;
         this.context = context;
     }
 
@@ -53,9 +53,10 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
         StringBuilder stringBuilder = new StringBuilder();
         stringBuilder.append("R$ ");
         holder.textViewPriceOffer.setText(stringBuilder.append(offer.getPrice()).toString().replace(".",","));
+        holder.textViewDate.setText("Válida até "+offer.getDateLimit());
 
         holder.textViewStore.setText(mapStores.get(offer.getStore().getId()).getName());
-        holder.textViewAddressStore.setText(mapAdresses.get(offer.getStore().getId()));
+        holder.textViewDistance.setText(String.format("%.2f",mapDistance.get(offer.getStore().getId())).replace(".",",") + " km");
         PicassoTrustAll.getInstance(context).load(mapStores.get(offer.getStore().getId()).getImage()).into(holder.imageViewStore);
     }
 
@@ -69,20 +70,22 @@ public class AdapterStoreOffer extends RecyclerView.Adapter<AdapterStoreOffer.My
         ImageView imageViewOffer;
         TextView textViewDescOffer;
         TextView textViewPriceOffer;
+        TextView textViewDate;
 
         TextView textViewStore;
-        TextView textViewAddressStore;
+        TextView textViewDistance;
         ImageView imageViewStore;
 
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imageViewOffer = itemView.findViewById(R.id.imageViewBannerOffer);
+            imageViewOffer = itemView.findViewById(R.id.imageViewOffer);
             textViewDescOffer = itemView.findViewById(R.id.textViewDescOffer);
             textViewPriceOffer = itemView.findViewById(R.id.textViewPriceOffer);
+            textViewDate = itemView.findViewById(R.id.textViewDate);
 
             textViewStore = itemView.findViewById(R.id.textViewStore);
-            textViewAddressStore = itemView.findViewById(R.id.textViewAddressStore);
+            textViewDistance = itemView.findViewById(R.id.textViewDistance);
             imageViewStore = itemView.findViewById(R.id.imageViewStore);
         }
     }

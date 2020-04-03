@@ -11,8 +11,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.appoffer01.api.model.BannerOffer;
-import com.example.appoffer01.api.model.Offer;
-import com.example.appoffer01.api.model.Sector;
 import com.example.appoffer10.R;
 import com.example.appoffer01.util.PicassoTrustAll;
 
@@ -65,7 +63,7 @@ public class AdapterBannerOffer extends RecyclerView.Adapter<AdapterBannerOffer.
         public MyViewHolder(@NonNull View itemView) {
             super(itemView);
 
-            imageViewBannerOffer = itemView.findViewById(R.id.imageViewBannerOffer);
+            imageViewBannerOffer = itemView.findViewById(R.id.imageViewOffer);
             textViewDate = itemView.findViewById(R.id.textViewDate);
             textViewSector = itemView.findViewById(R.id.textViewSector);
 

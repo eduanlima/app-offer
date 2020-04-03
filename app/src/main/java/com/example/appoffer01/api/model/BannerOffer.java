@@ -1,5 +1,7 @@
 package com.example.appoffer01.api.model;
 
+import com.example.appoffer01.util.ConvertDate;
+
 import java.io.Serializable;
 
 public class BannerOffer implements Serializable{
@@ -45,6 +47,7 @@ public class BannerOffer implements Serializable{
 	}
 
 	public void setDateInitial(String dateInitial) {
+		dateInitial = ConvertDate.convert(dateInitial);
 		this.dateInitial = dateInitial;
 	}
 
@@ -53,6 +56,7 @@ public class BannerOffer implements Serializable{
 	}
 
 	public void setDateLimit(String dateLimit) {
+		dateLimit = ConvertDate.convert(dateLimit);
 		this.dateLimit = dateLimit;
 	}
 
