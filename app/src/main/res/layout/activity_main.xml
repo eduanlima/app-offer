@@ -50,7 +50,7 @@
                     android:paddingLeft="8dp" />
 
                 <Button
-                    android:id="@+id/btt_option"
+                    android:id="@+id/buttonOption"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_marginTop="0dp"
@@ -61,6 +61,23 @@
             </LinearLayout>
 
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/textViewModeSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="8dp"
+            android:layout_marginTop="4dp"
+            android:layout_marginRight="8dp"
+            android:background="@drawable/bg_rounded_gray_clear"
+            android:paddingLeft="8dp"
+            android:paddingTop="4dp"
+            android:paddingRight="8dp"
+            android:paddingBottom="4dp"
+            android:text="Pesquisa por ofertas."
+            android:textColor="@color/gray_dark"
+            android:textSize="14dp"
+            android:textStyle="bold" />
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewAllStores"

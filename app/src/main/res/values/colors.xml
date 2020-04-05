@@ -6,4 +6,6 @@
     <color name="red_main">#C82506</color>
     <color name="black_standard">#000000</color>
     <color name="red_secondary">#FF6969</color>
+    <color name="gray_clear">#E9E7E7</color>
+    <color name="gray_dark">#A09E9E</color>
 </resources>

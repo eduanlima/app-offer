@@ -7,6 +7,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.app.Dialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -22,7 +23,12 @@ import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+import android.widget.TextView;
 import android.widget.Toast;
 import com.example.appoffer01.adapter.AdapterStoreOffer;
 import com.example.appoffer01.api.model.Address;
@@ -77,6 +83,11 @@ public class MainActivity extends AppCompatActivity {
     private Byte checkAdapter;
     private ProgressDialog progressDialog;
 
+    private Button buttonOption;
+    private Dialog dialogOption;
+    private Integer searchMode; //{0 - product, 1 - store, 2 - location}
+    private TextView textViewModeSearch;
+
     /*Constant url api*/
     private final String URL_API = "https://api-offers.herokuapp.com/v01/";
 
@@ -95,6 +106,13 @@ public class MainActivity extends AppCompatActivity {
         /*Edit text to search offers and stores*/
         editTextSearch = findViewById(R.id.editTextSearch);
 
+        /**/
+        dialogOption = new Dialog(MainActivity.this);
+
+        searchMode = 0;
+
+        textViewModeSearch = findViewById(R.id.textViewModeSearch);
+
         /*Set action on text change in edit text*/
         editTextSearch.addTextChangedListener(new TextWatcher() {
             @Override
@@ -108,24 +126,76 @@ public class MainActivity extends AppCompatActivity {
                 /*The search will be work from three characters*/
                 if (editTextSearch.length() > 2) {
 
-                    /*This list contains all items was returned from method "orderByPrice"*/
-                    offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
+                    if (searchMode == 0){
+                        /*This list contains all items was returned from method "orderByPrice"*/
+                        offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
 
-                    if (offerSearch != null){
-                        /*Show all offers into 'recycleView'*/
-                        createRecycleView(1);
+                        if (offerSearch != null){
+                            /*Show all offers into 'recycleView'*/
+                            createRecycleView(1);
+                        }
+                        else{
+                            /*If there is not any offer found*/
+                            Toast.makeText(getApplicationContext(), "Produto não encontrado",  Toast.LENGTH_SHORT).show();
+                            createRecycleView(0);
+                        }
                     }
-                    else{
-                        /*If there is not any offer found*/
-                        Toast.makeText(getApplicationContext(), "Produto não encontrado",  Toast.LENGTH_SHORT).show();
-                        createRecycleView(0);
-                    }
+
                 }
                 else if (editTextSearch.length()  <= 2){
                     createRecycleView(0);
                 }
             }
         });
+
+        //Button show search options
+        buttonOption = findViewById(R.id.buttonOption);
+
+        //Set action on click button show options search */
+        buttonOption.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dialogOption.show();
+                /*Set content*/
+                dialogOption.setContentView(R.layout.option_search);
+                /*Set transparent background*/
+                dialogOption.getWindow().setBackgroundDrawableResource(
+                        android.R.color.transparent
+                );
+            }
+        });
+    }
+
+    /*Use radio*/
+    public void onRadioOptionClicked(View view){
+        //Is the button option now clicked?
+        boolean checked = ((RadioButton) view).isChecked();
+
+        //Checked which radio button was clicked
+        switch (view.getId()){
+            case R.id.radioButtonOffer:
+                if (checked) {
+                    searchMode = 0;
+                    textViewModeSearch.setText("Pesquisa por ofertas.");
+                }
+                break;
+            case R.id.radioButtonStore:
+                if (checked) {
+                    searchMode = 1;
+                    textViewModeSearch.setText("Pesquisa por lojas.");
+                }
+                break;
+            case R.id.radioButtonLocals:
+                if (checked) {
+                    searchMode = 2;
+                    textViewModeSearch.setText("Pesquisa a partir de 'Meus locais'");
+                }
+                break;
+        }
+    }
+
+    public void confirmOption(View view){
+        dialogOption.dismiss();
     }
 
     @Override
