@@ -7,7 +7,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-public class OrderOffers {
+public class SearchOffer {
     /*This method is used to search a offer from through a description product
     and return it into a ordained list*/
     public static List<Offer> orderByPrice(String textSearch, List<Offer> allOffers){

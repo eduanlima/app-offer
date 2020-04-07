@@ -20,14 +20,11 @@ import android.os.Looper;
 import android.provider.Settings;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.LinearLayout;
 import android.widget.RadioButton;
-import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.example.appoffer01.adapter.AdapterStoreOffer;
@@ -36,8 +33,9 @@ import com.example.appoffer01.api.model.Offer;
 import com.example.appoffer01.api.model.Product;
 import com.example.appoffer01.api.model.Sector;
 import com.example.appoffer01.api.model.TypeStore;
-import com.example.appoffer01.util.FilterAddress;
-import com.example.appoffer01.util.OrderOffers;
+import com.example.appoffer01.util.HandlerAddress;
+import com.example.appoffer01.util.SearchOffer;
+import com.example.appoffer01.util.SearchStore;
 import com.example.appoffer10.R;
 import com.example.appoffer01.adapter.AdapterStores;
 import com.example.appoffer01.api.model.Store;
@@ -86,7 +84,9 @@ public class MainActivity extends AppCompatActivity {
     private Button buttonOption;
     private Dialog dialogOption;
     private Integer searchMode; //{0 - product, 1 - store, 2 - location}
+    private Integer optionRadio;
     private TextView textViewModeSearch;
+    private List<Store> storeSearch;
 
     /*Constant url api*/
     private final String URL_API = "https://api-offers.herokuapp.com/v01/";
@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        searchMode = 0;
 
         /*Get location*/
         mFusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
@@ -108,8 +110,6 @@ public class MainActivity extends AppCompatActivity {
 
         /**/
         dialogOption = new Dialog(MainActivity.this);
-
-        searchMode = 0;
 
         textViewModeSearch = findViewById(R.id.textViewModeSearch);
 
@@ -128,7 +128,7 @@ public class MainActivity extends AppCompatActivity {
 
                     if (searchMode == 0){
                         /*This list contains all items was returned from method "orderByPrice"*/
-                        offerSearch = OrderOffers.orderByPrice(editTextSearch.getText().toString(), allOffers);
+                        offerSearch = SearchOffer.orderByPrice(editTextSearch.getText().toString(), allOffers);
 
                         if (offerSearch != null){
                             /*Show all offers into 'recycleView'*/
@@ -140,10 +140,29 @@ public class MainActivity extends AppCompatActivity {
                             createRecycleView(0);
                         }
                     }
+                    else if (searchMode == 1){
+                        storeSearch = SearchStore.search(editTextSearch.getText().toString(), stores);
+
+                        if (storeSearch != null){
+                            /*Show all offers into 'recycleView'*/
+                            createRecycleView(2);
+                        }
+                        else{
+                            /*If there is not any offer found*/
+                            Toast.makeText(getApplicationContext(), "Loja não encontrada",  Toast.LENGTH_SHORT).show();
+                            clearRecycleView();
+                        }
+                    }
 
                 }
                 else if (editTextSearch.length()  <= 2){
-                    createRecycleView(0);
+
+                    if (searchMode == 0){
+                        createRecycleView(0);
+                    }
+                    else if(searchMode == 1){
+                        clearRecycleView();
+                    }
                 }
             }
         });
@@ -166,7 +185,8 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    /*Use radio*/
+    //Use radio
+
     public void onRadioOptionClicked(View view){
         //Is the button option now clicked?
         boolean checked = ((RadioButton) view).isChecked();
@@ -174,27 +194,54 @@ public class MainActivity extends AppCompatActivity {
         //Checked which radio button was clicked
         switch (view.getId()){
             case R.id.radioButtonOffer:
-                if (checked) {
-                    searchMode = 0;
-                    textViewModeSearch.setText("Pesquisa por ofertas.");
-                }
+                if (checked)
+                    optionRadio = 0;
                 break;
+
             case R.id.radioButtonStore:
-                if (checked) {
-                    searchMode = 1;
-                    textViewModeSearch.setText("Pesquisa por lojas.");
-                }
+                if (checked)
+                    optionRadio = 1;
                 break;
+
             case R.id.radioButtonLocals:
-                if (checked) {
-                    searchMode = 2;
-                    textViewModeSearch.setText("Pesquisa a partir de 'Meus locais'");
-                }
-                break;
+                if (checked)
+                    optionRadio = 2;
         }
     }
 
     public void confirmOption(View view){
+
+        stores = null;
+        mapAdresses.clear();
+        mapDistance.clear();
+        mapAdresses.clear();
+        allIdStores = new ArrayList<>();
+        allIdStores = new ArrayList<>();
+        allOffers = new ArrayList<>();
+        offerSearch = new ArrayList<>();
+
+        searchMode = optionRadio;
+
+        if (searchMode == 0){
+            textViewModeSearch.setText("Pesquisa por ofertas.");
+            editTextSearch.setHint("Descrição do produto...");
+            TaskGetAdresses taskGetAdresses = new TaskGetAdresses();
+            taskGetAdresses.execute("adresses","f");
+
+        }else if (searchMode == 1){
+            textViewModeSearch.setText("Pesquisa por lojas.");
+            editTextSearch.setHint("Nome da loja...");
+            TaskGetAdresses taskGetAdresses = new TaskGetAdresses();
+            taskGetAdresses.execute("adresses","n");
+        }
+        else if (searchMode == 2){
+
+        }
+
+        if (editTextSearch.getText().length() != 0){
+            editTextSearch.setText("");
+        }
+
         dialogOption.dismiss();
     }
 
@@ -207,10 +254,13 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume(){
         super.onResume();
         /*Is list stores is full, it is possible show all stores*/
-        if (stores != null){
+        if (stores != null && storeSearch == null){
             editTextSearch.setText("");
             offerSearch = new ArrayList<>();
             createRecycleView(0);
+        }
+        else if (stores == null && storeSearch != null){
+            createRecycleView(2);
         }
     }
 
@@ -254,10 +304,8 @@ public class MainActivity extends AppCompatActivity {
                                     latitude = location.getLatitude();
                                     longitude = location.getLongitude();
 
-                                    showProgressDialog();
-
                                     TaskGetAdresses taskGetAdresses = new TaskGetAdresses();
-                                    taskGetAdresses.execute("adresses");
+                                    taskGetAdresses.execute("adresses","f");
                                 }
                             }
                         }
@@ -313,12 +361,13 @@ public class MainActivity extends AppCompatActivity {
         /*Configure adapter*/
         AdapterStores adapterStores =  new AdapterStores(stores, mapAdresses, mapDistance, this);
         AdapterStoreOffer adapterStoreOffer = new AdapterStoreOffer(offerSearch, mapStores, mapDistance, this);
+        AdapterStores adapterSearchStores =  new AdapterStores(storeSearch, mapAdresses, mapDistance, this);
 
         /*Configure Recycleview*/
         RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(getApplicationContext());
         recyclerView.setLayoutManager(layoutManager);
         recyclerView.setHasFixedSize(true);
-        recyclerView.setAdapter(null);
+        clearRecycleView();
 
         /*The 'type' variable defines the way the listing will be displayed,
          whether by stores (type == 0) or offers (type == 1)*/
@@ -328,9 +377,13 @@ public class MainActivity extends AppCompatActivity {
             clicking on the 'recyclerView' element*/
             checkAdapter = 0;
         }
-        else{
+        else if (type == 1){
            recyclerView.setAdapter(adapterStoreOffer);
-            checkAdapter = 1;
+           checkAdapter = 1;
+        }
+        else if (type == 2){
+            recyclerView.setAdapter(adapterSearchStores);
+            checkAdapter = 2;
         }
 
         /*Set event click into each element 'recyclerView'*/
@@ -357,6 +410,9 @@ public class MainActivity extends AppCompatActivity {
                                     store = mapStores.get(offer.getStore().getId());
                                     sector_id = offer.getProduct().getSector().getId();
                                 }
+                                else if (checkAdapter == 2){
+                                    store = storeSearch.get(position);
+                                }
 
                                 /*Set new Activity*/
                                 Intent intent = new Intent(getApplicationContext(), BannerOfferActivity.class);
@@ -380,6 +436,10 @@ public class MainActivity extends AppCompatActivity {
          );
     }
 
+    public void clearRecycleView(){
+        recyclerView.setAdapter(null);
+    }
+
     public void showProgressDialog(){
         progressDialog.show();
         /*Set content*/
@@ -396,9 +456,13 @@ public class MainActivity extends AppCompatActivity {
 
     /*This async task return a list of all adresses from api*/
     class TaskGetAdresses extends AsyncTask<String, Void, String>{
+        String key = "";
+        Integer keyInt = 0;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
+            showProgressDialog();
         }
 
         @Override
@@ -407,6 +471,8 @@ public class MainActivity extends AppCompatActivity {
             InputStreamReader inputStreamReader = null;
             BufferedReader bufferedReader = null;
             StringBuffer stringBuffer = null;
+
+            key = strings[1];
 
             try {
                 /*Create an url*/
@@ -463,13 +529,21 @@ public class MainActivity extends AppCompatActivity {
                 }
 
                 adresses = adressesSearch;
-                adresses = FilterAddress.filterAdresses(adresses, latitude, longitude);
+
+                if(key.equals("f")){
+                    adresses = HandlerAddress.filterAdresses(adresses, latitude, longitude);
+                    keyInt = 1;
+
+                }else if(key.equals("n")){
+                    adresses = HandlerAddress.orderAdresses(adresses, latitude, longitude);
+                    keyInt = 0;
+                }
 
                 for (Address addr : adresses){
                     mapAdresses.put(addr.getId(), addr.getAddress());
                     mapDistance.put(addr.getId(), addr.getDistance());
                     TaskGetStore taskGetStore = new TaskGetStore();
-                    taskGetStore.execute(addr.getId());
+                    taskGetStore.execute(addr.getId(), keyInt);
                 }
 
             } catch (JSONException e) {
@@ -481,6 +555,9 @@ public class MainActivity extends AppCompatActivity {
 
     /*This async task return one store from api through id*/
     class TaskGetStore extends AsyncTask<Integer, Void, String>{
+
+        int key = 0;
+
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -492,6 +569,8 @@ public class MainActivity extends AppCompatActivity {
             InputStreamReader inputStreamReader = null;
             BufferedReader bufferedReader = null;
             StringBuffer stringBuffer = null;
+
+            key = integers[1];
 
             try{
                 /*Create URL*/
@@ -555,14 +634,22 @@ public class MainActivity extends AppCompatActivity {
                 mapStores.put(store.getId(), store);
 
                 if (stores.size() == mapAdresses.size()){
-                    createRecycleView(0);
 
-                    if (mapAdresses.size() != allIdStores.size()){
-                        for (Store storeT: stores){
-                            TaskGetOffers taskGetOffers = new TaskGetOffers();
-                            taskGetOffers.execute(storeT.getId());
+                    if (key == 1){
+                        createRecycleView(0);
+
+                        if (mapAdresses.size() != allIdStores.size()){
+                            for (Store storeT: stores){
+                                TaskGetOffers taskGetOffers = new TaskGetOffers();
+                                taskGetOffers.execute(storeT.getId());
+                            }
                         }
+
+                    }else if(key == 0){
+                        clearRecycleView();
+                        closeProgressDialog();
                     }
+
                 }
 
             }catch(JSONException e){
@@ -706,4 +793,159 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
+
+    /*This async task return a list of all stores from api*/
+    class TaskGetStores extends AsyncTask<Void, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Void... voids) {
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer stringBuffer = null;
+
+            try {
+                /*Create an url*/
+                URL url = new URL(URL_API + "stores");
+
+                /*Open a connection with object url*/
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                /*Get response dates as bytes*/
+                inputStream = httpURLConnection.getInputStream();
+
+                /*Convert inputStream from bytes to characters*/
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                /*Create buffer for read characters*/
+                bufferedReader = new BufferedReader(inputStreamReader);
+
+                stringBuffer = new StringBuffer();
+
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null) {
+                    stringBuffer.append(line);
+                }
+
+            }catch(MalformedURLException e){
+                e.printStackTrace();
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+
+            return stringBuffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            Store store;
+            List<Store> stores = new ArrayList<>();
+
+            try{
+                JSONObject jasonObjectStore;
+                JSONArray jsonArrayStore = new JSONArray(s);
+
+                for(int i = 0; i < jsonArrayStore.length(); i++){
+                    jasonObjectStore = jsonArrayStore.getJSONObject(i);
+
+                    store = new Store();
+                    store.setId(jasonObjectStore.getInt("id"));
+                    store.setName(jasonObjectStore.getString("name"));
+
+                    stores.add(store);
+                }
+
+            }catch(JSONException e){
+                e.printStackTrace();
+            }
+
+        }
+    }
+
+    /*This async task return a list of all adresses from api*/
+    class TaskGetAdress extends AsyncTask<Integer, Void, String>{
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Integer... integers) {
+            InputStream inputStream = null;
+            InputStreamReader inputStreamReader = null;
+            BufferedReader bufferedReader = null;
+            StringBuffer stringBuffer = null;
+
+            try {
+                /*Create an url*/
+                URL url = new URL(URL_API + "adresses/" + integers[0]);
+
+                /*Open a connection with object url*/
+                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
+
+                /*Get response dates as bytes*/
+                inputStream = httpURLConnection.getInputStream();
+
+                /*Convert inputStream from bytes to characters*/
+                inputStreamReader = new InputStreamReader(inputStream);
+
+                /*Create buffer for read characters*/
+                bufferedReader = new BufferedReader(inputStreamReader);
+
+                stringBuffer = new StringBuffer();
+
+                String line;
+
+                while ((line = bufferedReader.readLine()) != null){
+                    stringBuffer.append(line);
+                }
+
+            } catch (MalformedURLException e) {
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+
+            return stringBuffer.toString();
+        }
+
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+
+            List<Address> adressesSearch = new ArrayList<>();
+            Address address;
+
+            try {
+                JSONObject jsonObject = new JSONObject(s);
+
+                address = new Address();
+                address.setId(jsonObject.getInt("id"));
+                address.setAddress(jsonObject.getString("address"));
+                address.setLatitude(jsonObject.getDouble("latitude"));
+                address.setLongitude(jsonObject.getDouble("longitude"));
+
+                /*
+                for (Address addr : adresses){
+                    mapAdresses.put(addr.getId(), addr.getAddress());
+                    mapDistance.put(addr.getId(), addr.getDistance());
+                    TaskGetStore taskGetStore = new TaskGetStore();
+                    taskGetStore.execute(addr.getId());
+                }
+                */
+            } catch (JSONException e) {
+                e.printStackTrace();
+            }
+
+        }
+    }
+
 }
+
